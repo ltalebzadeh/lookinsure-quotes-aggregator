@@ -14,6 +14,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class QuoteService {
@@ -66,5 +68,14 @@ public class QuoteService {
             throw new ResourceNotFoundException("Quote not found with ID: " + id);
         }
         quoteRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<QuoteResponse> getAggregatedQuotes() {
+        List<Quote> sortedQuotes = quoteRepository.findAllByOrderByPriceAsc();
+
+        return sortedQuotes.stream()
+                .map(quoteMapper::toResponse)
+                .toList();
     }
 }
