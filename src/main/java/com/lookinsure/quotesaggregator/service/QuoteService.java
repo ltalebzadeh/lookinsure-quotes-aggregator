@@ -44,4 +44,12 @@ public class QuoteService {
         Quote updatedQuote = quoteRepository.save(existingQuote);
         return quoteMapper.toResponse(updatedQuote);
     }
+
+    @Transactional
+    public void deleteQuote(Long id) {
+        if (!quoteRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Quote not found with ID: " + id);
+        }
+        quoteRepository.deleteById(id);
+    }
 }
