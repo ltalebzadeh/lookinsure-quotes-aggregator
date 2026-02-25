@@ -6,6 +6,7 @@ import com.lookinsure.quotesaggregator.entity.Provider;
 import com.lookinsure.quotesaggregator.entity.Quote;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 @Mapper(componentModel = "spring")
 public interface QuoteMapper {
@@ -16,4 +17,8 @@ public interface QuoteMapper {
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "provider", source = "provider")
     Quote toEntity(QuoteRequest request, Provider provider);
+
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "provider", source = "provider")
+    void updateEntity(@MappingTarget Quote existingQuote, QuoteRequest request, Provider provider);
 }

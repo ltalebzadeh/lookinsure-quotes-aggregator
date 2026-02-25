@@ -10,6 +10,7 @@ import com.lookinsure.quotesaggregator.repository.ProviderRepository;
 import com.lookinsure.quotesaggregator.repository.QuoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +20,7 @@ public class QuoteService {
     private final ProviderRepository providerRepository;
     private final QuoteMapper quoteMapper;
 
+    @Transactional
     public QuoteResponse createQuote(QuoteRequest request) {
         Provider provider = providerRepository.findById(request.providerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Provider not found with ID: " + request.providerId()));
@@ -27,5 +29,19 @@ public class QuoteService {
         Quote savedQuote = quoteRepository.save(quote);
 
         return quoteMapper.toResponse(savedQuote);
+    }
+
+    @Transactional
+    public QuoteResponse updateQuote(Long id, QuoteRequest request) {
+        Quote existingQuote = quoteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quote not found with ID: " + id));
+
+        Provider provider = providerRepository.findById(request.providerId())
+                .orElseThrow(() -> new ResourceNotFoundException("Provider not found with ID: " + request.providerId()));
+
+        quoteMapper.updateEntity(existingQuote, request, provider);
+
+        Quote updatedQuote = quoteRepository.save(existingQuote);
+        return quoteMapper.toResponse(updatedQuote);
     }
 }
