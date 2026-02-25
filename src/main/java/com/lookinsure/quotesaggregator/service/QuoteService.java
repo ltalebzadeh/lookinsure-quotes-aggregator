@@ -9,6 +9,8 @@ import com.lookinsure.quotesaggregator.mapper.QuoteMapper;
 import com.lookinsure.quotesaggregator.repository.ProviderRepository;
 import com.lookinsure.quotesaggregator.repository.QuoteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +31,19 @@ public class QuoteService {
         Quote savedQuote = quoteRepository.save(quote);
 
         return quoteMapper.toResponse(savedQuote);
+    }
+
+    @Transactional(readOnly = true)
+    public QuoteResponse getQuoteById(Long id) {
+        Quote quote = quoteRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Quote not found with ID: " + id));
+        return quoteMapper.toResponse(quote);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<QuoteResponse> getAllQuotes(Pageable pageable) {
+        return quoteRepository.findAll(pageable)
+                .map(quoteMapper::toResponse);
     }
 
     @Transactional
