@@ -9,6 +9,8 @@ import com.lookinsure.quotesaggregator.mapper.QuoteMapper;
 import com.lookinsure.quotesaggregator.repository.ProviderRepository;
 import com.lookinsure.quotesaggregator.repository.QuoteRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class QuoteService {
     private final QuoteMapper quoteMapper;
 
     @Transactional
+    @CacheEvict(value = "aggregatedQuotes", allEntries = true)
     public QuoteResponse createQuote(QuoteRequest request) {
         Provider provider = providerRepository.findById(request.providerId())
                 .orElseThrow(() -> new ResourceNotFoundException("Provider not found with ID: " + request.providerId()));
@@ -49,6 +52,7 @@ public class QuoteService {
     }
 
     @Transactional
+    @CacheEvict(value = "aggregatedQuotes", allEntries = true)
     public QuoteResponse updateQuote(Long id, QuoteRequest request) {
         Quote existingQuote = quoteRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Quote not found with ID: " + id));
@@ -63,6 +67,7 @@ public class QuoteService {
     }
 
     @Transactional
+    @CacheEvict(value = "aggregatedQuotes", allEntries = true)
     public void deleteQuote(Long id) {
         if (!quoteRepository.existsById(id)) {
             throw new ResourceNotFoundException("Quote not found with ID: " + id);
@@ -71,6 +76,7 @@ public class QuoteService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "aggregatedQuotes")
     public List<QuoteResponse> getAggregatedQuotes() {
         List<Quote> sortedQuotes = quoteRepository.findAllByOrderByPriceAsc();
 
@@ -78,4 +84,5 @@ public class QuoteService {
                 .map(quoteMapper::toResponse)
                 .toList();
     }
+
 }
